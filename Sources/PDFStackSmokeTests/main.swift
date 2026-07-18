@@ -667,6 +667,34 @@ do {
     }
 }
 
+// replaceTextBlock textRect: the FreeText box uses the explicit rect while the
+// cover still tracks the original block bounds (so glyphs stay hidden).
+do {
+    let doc = makeTextBlockDocument()
+    if let page = doc.page(at: 0) {
+        let blocks = PDFTextBlockDetector.blocks(on: page)
+        if let target = blocks.first {
+            let someStyle = TextStyle(fontName: "Helvetica", fontSize: 18, color: .black, alignment: .left)
+            let textRect = CGRect(x: 50, y: 50, width: 300, height: 120)
+            let replacement = PDFAnnotationOperations.replaceTextBlock(
+                target, on: page, with: "X", style: someStyle, textRect: textRect)
+            let tb = replacement.text.bounds
+            check(abs(tb.minX - textRect.minX) < 1 && abs(tb.minY - textRect.minY) < 1
+                  && abs(tb.width - textRect.width) < 1 && abs(tb.height - textRect.height) < 1,
+                  "replaceTextBlock textRect: expected text bounds ≈ \(textRect), got \(tb)")
+            let cover = replacement.cover.bounds
+            let expectedCover = target.bounds.insetBy(dx: -2, dy: -2)
+            check(abs(cover.minX - expectedCover.minX) < 2 && abs(cover.minY - expectedCover.minY) < 2
+                  && abs(cover.width - expectedCover.width) < 2 && abs(cover.height - expectedCover.height) < 2,
+                  "replaceTextBlock textRect: expected cover ≈ block bounds \(expectedCover), got \(cover)")
+        } else {
+            failures.append("replaceTextBlock textRect: no blocks detected")
+        }
+    } else {
+        failures.append("replaceTextBlock textRect: no page")
+    }
+}
+
 if failures.isEmpty {
     print("ALL CHECKS PASSED")
 } else {

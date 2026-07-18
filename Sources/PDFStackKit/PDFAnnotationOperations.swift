@@ -110,13 +110,18 @@ public enum PDFAnnotationOperations {
     /// a FreeText annotation re-sets the new text in the block's detected
     /// typography at the same bounds. Both are ordinary annotations, so the
     /// existing Erase tool can undo the edit.
+    ///
+    /// `textRect` (page space) sizes the replacement FreeText box when the user
+    /// resized the on-page editor; the cover still tracks the block's original
+    /// bounds so the underlying glyphs stay hidden regardless of the new size.
     @discardableResult
     public static func replaceTextBlock(
         _ block: TextBlock,
         on page: PDFPage,
         with newText: String,
         backgroundColor: NSColor = .white,
-        style: TextStyle? = nil
+        style: TextStyle? = nil,
+        textRect: CGRect? = nil
     ) -> TextBlockReplacement {
         let coverBounds = block.bounds.insetBy(dx: -2, dy: -2)
 
@@ -129,7 +134,7 @@ public enum PDFAnnotationOperations {
         cover.border = border
         page.addAnnotation(cover)
 
-        let text = PDFAnnotation(bounds: coverBounds, forType: .freeText, withProperties: nil)
+        let text = PDFAnnotation(bounds: textRect ?? coverBounds, forType: .freeText, withProperties: nil)
         text.userName = "PDFStack.editText"
         text.contents = newText
         if let style = style {

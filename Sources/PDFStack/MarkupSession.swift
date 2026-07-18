@@ -66,6 +66,10 @@ struct InlineEdit {
     let page: PDFPage
     var text: String
     var style: TextStyle
+    /// The editor's box in page space, written by drag-resize and auto-grow.
+    /// When nil, the box falls back to its kind-based default (see
+    /// `InlineTextEditorOverlay.pageRect(for:)`).
+    var pageRectOverride: CGRect?
 }
 
 final class MarkupSession: ObservableObject {
@@ -90,6 +94,13 @@ final class MarkupSession: ObservableObject {
         if inlineEdit != nil {
             inlineEdit?.style = textStyle
         }
+    }
+
+    /// Records the inline editor's current box (page space) as it is resized by
+    /// drag handles or grown to fit the font. `@Published inlineEdit` fires
+    /// `objectWillChange`, so the overlay re-reads the rect on the next update.
+    func setInlineRect(_ rect: CGRect) {
+        inlineEdit?.pageRectOverride = rect
     }
 
     /// Insertion order of annotations created this session, used to sort

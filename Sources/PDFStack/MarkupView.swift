@@ -398,21 +398,24 @@ struct MarkupView: View {
         let page = edit.page
         let trimmed = edit.text.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let rect = InlineTextEditorOverlay.pageRect(for: edit)
         switch edit.kind {
         case .newText:
             guard !trimmed.isEmpty else { return }
-            let size = InlineTextEditorOverlay.pageRect(for: edit).size
             let point: CGPoint
             if case .newText(let pagePoint) = edit.kind { point = pagePoint } else { return }
             let created = PDFAnnotationOperations.addFreeText(
-                on: page, at: point, text: edit.text, style: edit.style, size: size
+                on: page, at: point, text: edit.text, style: edit.style, size: rect.size
             )
+            // The editor may have been dragged/grown away from the default box;
+            // pin the committed annotation to the editor's final rect.
+            created.bounds = rect
             session.recordCreated(created)
             refreshAnnotations(on: [page])
         case .editBlock(let block):
             guard !trimmed.isEmpty else { return }
             let replacement = PDFAnnotationOperations.replaceTextBlock(
-                block, on: page, with: edit.text, style: edit.style
+                block, on: page, with: edit.text, style: edit.style, textRect: rect
             )
             session.recordCreated(replacement.text)
             refreshAnnotations(on: [page])
@@ -422,6 +425,7 @@ struct MarkupView: View {
             annotation.font = edit.style.font
             annotation.fontColor = edit.style.color
             annotation.alignment = edit.style.alignment
+            annotation.bounds = rect
             refreshAnnotations(on: [page])
         }
     }
