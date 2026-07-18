@@ -7,6 +7,12 @@ document or as separate files.
 Built with SwiftUI and PDFKit, no third-party dependencies. Requires macOS 13
 (Ventura) or later.
 
+![The document workspace: pages from a loaded PDF, with Trim, Split, Join, Pages, and Edit actions.](assets/workspace.png)
+*The document workspace — select pages, then trim, split, join, or edit them.*
+
+![Editing text directly on the page, with the text style inspector showing font, size, colour, and alignment controls.](assets/edit-text.png)
+*Editing text directly on the page, with font, size, colour, and alignment in the inspector.*
+
 ## Features
 
 - **Combine** multiple PDFs into one, in an order you control by dragging rows in
